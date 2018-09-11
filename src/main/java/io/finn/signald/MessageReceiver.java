@@ -20,6 +20,7 @@ package io.finn.signald;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.ConcurrentHashMap;
+import java.net.Socket;
 
 import org.whispersystems.signalservice.api.messages.SignalServiceEnvelope;
 import org.whispersystems.signalservice.api.messages.SignalServiceContent;
@@ -40,10 +41,18 @@ class MessageReceiver implements Manager.ReceiveMessageHandler, Runnable {
     private SocketManager sockets;
     private static final Logger logger = LogManager.getLogger();
 
-    public MessageReceiver(String username, SocketManager sockets, ConcurrentHashMap<String,Manager> managers) throws NotAGroupMemberException, GroupNotFoundException, AttachmentInvalidException, IOException {
-      this.sockets = sockets;
+    public MessageReceiver(String username, ConcurrentHashMap<String,Manager> managers) {
       this.managers = managers;
       this.username = username;
+      this.sockets = new SocketManager();
+    }
+
+    public void subscribe(Socket s) {
+      this.sockets.add(s);
+    }
+
+    public void unsubscribe(Socket s) {
+      this.sockets.remove(s);
     }
 
     public void run() {

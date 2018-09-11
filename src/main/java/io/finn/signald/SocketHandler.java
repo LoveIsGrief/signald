@@ -55,13 +55,17 @@ public class SocketHandler implements Runnable {
   private BufferedReader reader;
   private PrintWriter writer;
   private ConcurrentHashMap<String,Manager> managers;
+  private ConcurrentHashMap<String,MessageReceiver> receivers;
   private ObjectMapper mpr = new ObjectMapper();
   private static final Logger logger = LogManager.getLogger();
+  private Socket socket;
 
-  public SocketHandler(Socket socket, ConcurrentHashMap<String,Manager> managers) throws IOException {
+  public SocketHandler(Socket socket, ConcurrentHashMap<String,MessageReceiver> receivers, ConcurrentHashMap<String,Manager> managers) throws IOException {
     this.reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
     this.writer = new PrintWriter(socket.getOutputStream(), true);
+    this.socket = socket;
     this.managers = managers;
+    this.receivers = receivers;
 
     this.mpr.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY); // disable autodetect
     this.mpr.enable(SerializationFeature.WRITE_NULL_MAP_VALUES);
@@ -100,6 +104,9 @@ public class SocketHandler implements Runnable {
     switch(request.type) {
       case "send":
         send(request);
+        break;
+      case "subscribe":
+        subscribe(request);
         break;
       case "list_accounts":
         listAccounts(request);
@@ -318,6 +325,17 @@ public class SocketHandler implements Runnable {
   private void listContacts(JsonRequest request) throws IOException {
     Manager m = getManager(request.username);
     this.reply("contact_list", m.getContacts(), request.id);
+  }
+
+  private void subscribe(JsonRequest request) throws IOException {
+    if(!this.receivers.containsKey(request.username)) {
+      MessageReceiver receiver = new MessageReceiver(request.username, this.managers);
+      this.receivers.put(request.username, receiver);
+      Thread messageReceiverThread = new Thread(receiver);
+      messageReceiverThread.start();
+    }
+    this.receivers.get(request.username).subscribe(this.socket);
+    this.reply("subscribed", null, request.id);
   }
 
   private void handleError(Throwable error, JsonRequest request) {
