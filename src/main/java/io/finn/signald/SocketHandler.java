@@ -71,7 +71,7 @@ public class SocketHandler implements Runnable {
 
   public void run() {
     try {
-      this.reply("hello", new JsonHelloMessage(), null);
+      this.reply("version", new JsonVersionMessage(), null);
     } catch(JsonProcessingException e) {
       handleError(e, null);
     }
@@ -141,6 +141,9 @@ public class SocketHandler implements Runnable {
         break;
       case "list_contacts":
         listContacts(request);
+        break;
+      case "version":
+        version();
         break;
       default:
         logger.warn("Unknown command type " + request.type);
@@ -323,6 +326,10 @@ public class SocketHandler implements Runnable {
   private void listContacts(JsonRequest request) throws IOException {
     Manager m = getManager(request.username);
     this.reply("contact_list", m.getContacts(), request.id);
+  }
+
+  private void version() throws IOException {
+      this.reply("version", new JsonVersionMessage(), null);
   }
 
   private void handleError(Throwable error, JsonRequest request) {

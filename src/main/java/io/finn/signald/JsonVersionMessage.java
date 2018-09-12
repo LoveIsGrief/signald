@@ -18,11 +18,11 @@
 package io.finn.signald;
 import io.finn.signald.BuildConfig;
 
-class JsonHelloMessage {
+class JsonVersionMessage {
   public String name;
   public String version;
 
-  JsonHelloMessage() {
+  JsonVersionMessage() {
     this.name = BuildConfig.NAME;
     this.version = BuildConfig.VERSION;
   }
