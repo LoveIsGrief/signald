@@ -116,6 +116,9 @@ public class SocketHandler implements Runnable {
       case "subscribe":
         subscribe(request);
         break;
+      case "unsubscribe":
+        unsubscribe(request);
+        break;
       case "list_accounts":
         listAccounts(request);
         break;
@@ -343,7 +346,12 @@ public class SocketHandler implements Runnable {
       messageReceiverThread.start();
     }
     this.receivers.get(request.username).subscribe(this.socket);
-    this.reply("subscribed", null, request.id);
+    this.reply("subscribed", null, request.id);  // TODO: Indicate if we actually subscribed or were already subscribed, also which username it was for
+  }
+
+  private void unsubscribe(JsonRequest request) throws IOException {
+    this.receivers.get(request.username).unsubscribe(this.socket);
+    this.reply("unsubscribed", null, request.id);  // TODO: Indicate if we actually unsubscribed or were already unsubscribed, also which username it was for
   }
 
   private void handleError(Throwable error, JsonRequest request) {
