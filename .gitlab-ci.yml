@@ -11,6 +11,8 @@ cache:
 
 build:
   stage: build
+  before_script:
+    - apt update && apt install -y make
   script:
     - make installDist
   after_script:
@@ -22,6 +24,8 @@ build:
 
 deb:
   stage: package
+  before_script:
+    - apt update && apt install -y make
   script:
     - make deb
     - mv build/distributions/*.deb .
