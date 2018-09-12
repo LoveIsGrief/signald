@@ -75,8 +75,6 @@ public class Main {
           Socket socket = server.accept();
           socketmanager.add(socket);
 
-          logger.info("Accepted socket connection");
-
           // Kick off the thread to read input
           Thread socketHandlerThread = new Thread(new SocketHandler(socket, receivers,  managers), "socketlistener");
           socketHandlerThread.start();

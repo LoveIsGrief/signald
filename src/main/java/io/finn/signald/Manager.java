@@ -1112,6 +1112,10 @@ class Manager {
         }
     }
 
+    public void shutdownMessagePipe() {
+        this.messagePipe.shutdown();
+    }
+
     public void receiveMessages(long timeout, TimeUnit unit, boolean returnOnTimeout, boolean ignoreAttachments, ReceiveMessageHandler handler) throws IOException, NotAGroupMemberException, GroupNotFoundException, AttachmentInvalidException {
         retryFailedReceivedMessages(handler, ignoreAttachments);
         final SignalServiceMessageReceiver messageReceiver = new SignalServiceMessageReceiver(serviceConfiguration, username, password, deviceId, signalingKey, USER_AGENT);

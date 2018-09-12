@@ -51,8 +51,13 @@ class MessageReceiver implements Manager.ReceiveMessageHandler, Runnable {
       this.sockets.add(s);
     }
 
-    public void unsubscribe(Socket s) {
-      this.sockets.remove(s);
+    public boolean unsubscribe(Socket s) {
+      boolean removed = this.sockets.remove(s);
+      if(removed && this.sockets.size() == 0) {
+          logger.info("Last client for " + this.username + " unsubscribed, shutting down message pipe!");
+          this.m.shutdownMessagePipe();
+      }
+      return removed;
     }
 
     public void run() {
@@ -74,7 +79,9 @@ class MessageReceiver implements Manager.ReceiveMessageHandler, Runnable {
             boolean ignoreAttachments = false;
             try {
               this.m.receiveMessages((long) (timeout * 1000), TimeUnit.MILLISECONDS, returnOnTimeout, ignoreAttachments, this);
-            } catch (IOException | AssertionError e) {
+            } catch (IOException e) {
+                continue;
+            } catch (AssertionError e) {
                 logger.catching(e);
             }
           }

@@ -39,6 +39,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeoutException;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Map;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
@@ -74,14 +75,21 @@ public class SocketHandler implements Runnable {
   }
 
   public void run() {
+    logger.info("Client connected");
     while(true) {
       String line = null;
       JsonRequest request;
       try {
         line = this.reader.readLine();
         if(line == null) {
+          logger.info("Client disconnected");
           this.reader.close();
           this.writer.close();
+          for(Map.Entry<String, MessageReceiver> entry : this.receivers.entrySet()) {
+            if(entry.getValue().unsubscribe(this.socket)) {
+              logger.info("Unsubscribed from " + entry.getKey());
+            }
+          }
           return;
         }
         if(!line.equals("")) {
