@@ -60,6 +60,7 @@ public class SocketHandler implements Runnable {
   private ObjectMapper mpr = new ObjectMapper();
   private static final Logger logger = LogManager.getLogger();
   private Socket socket;
+  private ArrayList<String> subscribedAccounts = new ArrayList<String>();
 
   public SocketHandler(Socket socket, ConcurrentHashMap<String,MessageReceiver> receivers, ConcurrentHashMap<String,Manager> managers) throws IOException {
     this.reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
@@ -177,7 +178,7 @@ public class SocketHandler implements Runnable {
   }
 
   private void listAccounts(JsonRequest request) throws JsonProcessingException {
-    JsonAccountList accounts = new JsonAccountList(this.managers);
+    JsonAccountList accounts = new JsonAccountList(this.managers, this.subscribedAccounts);
     this.reply("account_list", accounts, request.id);
   }
 
@@ -346,11 +347,13 @@ public class SocketHandler implements Runnable {
       messageReceiverThread.start();
     }
     this.receivers.get(request.username).subscribe(this.socket);
+    this.subscribedAccounts.add(request.username);
     this.reply("subscribed", null, request.id);  // TODO: Indicate if we actually subscribed or were already subscribed, also which username it was for
   }
 
   private void unsubscribe(JsonRequest request) throws IOException {
     this.receivers.get(request.username).unsubscribe(this.socket);
+    this.subscribedAccounts.remove(request.username);
     this.reply("unsubscribed", null, request.id);  // TODO: Indicate if we actually unsubscribed or were already unsubscribed, also which username it was for
   }
 
