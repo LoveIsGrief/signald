@@ -70,6 +70,11 @@ public class SocketHandler implements Runnable {
   }
 
   public void run() {
+    try {
+      this.reply("hello", new JsonHelloMessage(), null);
+    } catch(JsonProcessingException e) {
+      handleError(e, null);
+    }
     while(true) {
       String line = null;
       JsonRequest request;
