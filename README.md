@@ -126,6 +126,10 @@ Returns all known identities/keys for a given number.
 | `username` | `string` | yes | The local account to use to check the identity |
 | `recipientNumber` | `string` | yes | The full number to look up. |
 
+### `version`
+
+Returns the version of signald in use
+
 ## License
 This software is licensed under the GPLv3. It is based on [signal-cli](https://github.com/Asamk/signal-cli)
 
