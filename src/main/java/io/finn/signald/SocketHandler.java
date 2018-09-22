@@ -349,7 +349,6 @@ public class SocketHandler implements Runnable {
     this.reply("contact_list", m.getContacts(), request.id);
   }
 
-<<<<<<< HEAD
   private void subscribe(JsonRequest request) throws IOException {
     if(!this.receivers.containsKey(request.username)) {
       MessageReceiver receiver = new MessageReceiver(request.username, this.managers);
@@ -366,10 +365,10 @@ public class SocketHandler implements Runnable {
     this.receivers.get(request.username).unsubscribe(this.socket);
     this.subscribedAccounts.remove(request.username);
     this.reply("unsubscribed", null, request.id);  // TODO: Indicate if we actually unsubscribed or were already unsubscribed, also which username it was for
-=======
+  }
+
   private void version() throws IOException {
       this.reply("version", new JsonVersionMessage(), null);
->>>>>>> master
   }
 
   private void handleError(Throwable error, JsonRequest request) {
