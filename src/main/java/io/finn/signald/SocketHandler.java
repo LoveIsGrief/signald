@@ -173,8 +173,8 @@ public class SocketHandler implements Runnable {
     }
   }
 
-  private void send(JsonRequest request) {
-    Manager manager = this.managers.get(request.username);
+  private void send(JsonRequest request) throws IOException {
+    Manager manager = getManager(request.username);
     try {
       if(request.recipientGroupId != null) {
         byte[] groupId = Base64.decode(request.recipientGroupId);
