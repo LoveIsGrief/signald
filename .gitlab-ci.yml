@@ -3,9 +3,7 @@ image: java:8-jdk
 stages:
   - build
   - package
-
-before_script:
-  - export GRADLE_USER_HOME=`pwd`/.gradle
+  - publish
 
 cache:
   paths:
@@ -14,28 +12,49 @@ cache:
 
 build:
   stage: build
+  before_script:
+    - apt update && apt install -y make
   script:
-    - ./gradlew build
+    - make installDist
 
 tar:
   stage: package
   script:
-    - ./gradlew distTar
+    - make distTar
+  only:
+    - tags
   artifacts:
     paths:
-      - build/distributions/*.tar
+      - signald
     expire_in: 1 week
 
-deb:
+deb:build:
   stage: package
   before_script:
-    - export VERSION=$(git describe --always --tags)
-    - echo "Building signald version $VERSION"
+    - apt update && apt install -y make
   script:
-    - ./gradlew deb
+    - make deb
     - mv build/distributions/*.deb .
   only:
     - tags
   artifacts:
     paths:
       - "*.deb"
+
+deb:publish:
+  stage: publish
+  image: registry.git.callpipe.com/finn/debian-repo-builder:master
+  only:
+    - tags
+  tags:
+    - package-signer
+  before_script:
+    - mc config host add minio "${MINIO_URL}" "${MINIO_ACCESS_KEY}" "${MINIO_SECRET_KEY}"
+    - mkdir public/ && cd public/
+    - mc cp -r -q minio/updates.signald.org/ .
+  script:
+    - release-deb ../ D89FFB45291229A410A1430A659475081F665F29
+    - gpg --homedir /opt/signing-keys/.gnupg --export --armor D89FFB45291229A410A1430A659475081F665F29 > apt-signing-key.asc
+    - mc cp -r -q . minio/updates.signald.org/
+  dependencies:
+    - deb:build
