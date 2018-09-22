@@ -129,6 +129,23 @@ Returns the version of signald in use
 
 ### `subscribe`
 
+Causes inbound messages to the specified account to be sent to the socket. If no clients are subscribed to a given account, signald
+will not listen for messages from the Signal server and the server will store them until a signald begins receiving again.
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `username` | `string` | yes | The user to unsubscribe to messages for. |
+
+### `unsubscribe`
+
+Unsubscribes from messages to the specified account. See `subscribe` for more details.
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `username` | `string` | yes | The user to unsubscribe to messages for. |
+
+### `unsubscribe`
+
 ## License
 This software is licensed under the GPLv3. It is based on [signal-cli](https://github.com/Asamk/signal-cli)
 
