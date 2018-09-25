@@ -52,7 +52,6 @@ deb:publish:
   script:
     - release-deb ../ D89FFB45291229A410A1430A659475081F665F29
     - gpg --homedir /opt/signing-keys/.gnupg --export --armor D89FFB45291229A410A1430A659475081F665F29 > apt-signing-key.asc
-    - find dist/
     - mc cp -r -q "dists/${SUITE}/main/binary-amd64/*.deb" "minio/updates.signald.org/dists/${SUITE}/main/binary-amd64/"
     - mc cp -r -q . minio/updates.signald.org/
   dependencies:
