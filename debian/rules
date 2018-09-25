@@ -18,3 +18,6 @@ override_dh_auto_install:
 	# export UPSTART_TARGET_DIR=debian/my_project/etc/init/; \
 	# mkdir -p $${UPSTART_TARGET_DIR}; \
 	# install -m 644 debian/my_project.conf $${UPSTART_TARGET_DIR};
+
+override_jh_installlibs:
+	@echo "todo: figure out why $< is a required target"
