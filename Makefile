@@ -1,3 +1,5 @@
+.PHONY: all deb installDist distTar clean
+
 export VERSION ?= $(shell ./version.sh)
 export CI_PROJECT_NAME ?= signald
 GRADLE=gradle
@@ -14,3 +16,7 @@ deb:
 
 installDist distTar:
 	$(GRADLE) $@
+
+clean:
+	rm -rf build/ .gradle/
+	git checkout HEAD -- debian/changelog
