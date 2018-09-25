@@ -16,7 +16,3 @@ deb:
 
 installDist distTar:
 	$(GRADLE) $@
-
-clean:
-	rm -rf build/ .gradle/
-	git checkout HEAD -- debian/changelog
