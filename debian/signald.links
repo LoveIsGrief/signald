@@ -1,1 +1,1 @@
-/var/lib/signald/bin/signald /usr/bin/signald
+debian/signald/var/lib/signald/bin/signald debian/signald/usr/bin/signald
