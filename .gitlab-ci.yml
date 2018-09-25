@@ -50,7 +50,7 @@ deb:publish:
     - mc config host add minio "${MINIO_URL}" "${MINIO_ACCESS_KEY}" "${MINIO_SECRET_KEY}"
     - export SUITE=$(get-suite)
     - mkdir -p public/dists/${SUITE}/
-    - mc cp -r -q "minio/updates.signald.org/dists/${SUITE}/" .
+    - mc cp -r -q "minio/updates.signald.org/dists/${SUITE}/" . || true
     - cd public
   script:
     - release-deb ../ D89FFB45291229A410A1430A659475081F665F29
