@@ -55,7 +55,7 @@ deb:publish:
     - release-deb ../ D89FFB45291229A410A1430A659475081F665F29
     - gpg --homedir /opt/signing-keys/.gnupg --export --armor D89FFB45291229A410A1430A659475081F665F29 > apt-signing-key.asc
     - find -type f
-    - for f in dists/${SUITE}/main/binary-amd64/signald_${VERSION}* $(find -type f | grep -v -E "\.deb$"); do mc cp -r -q "$f" "minio/updates.signald.org/$f"; done
+    - for f in dists/${SUITE}/main/binary-amd64/signald_${VERSION}* $(find -type f | grep -v -E "\.deb$"); do mc cp -q "$f" "minio/updates.signald.org/$f"; done
   dependencies:
     - deb:build
 
