@@ -10,7 +10,7 @@ override_dh_auto_build:
 	dh_auto_build -- installDist
 
 override_dh_auto_install:
-	dh_auto_install
+	dh_auto_install --
 	dh_systemd_enable || true
 	dh_systemd_start || true
 	# here we can install additional files like an upstart configuration
