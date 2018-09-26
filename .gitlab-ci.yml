@@ -4,6 +4,7 @@ stages:
   - build
   - package
   - publish
+  - cleanup
 
 variables:
   GRADLE_USER_HOME: "$CI_PROJECT_DIR/.gradle"
@@ -56,3 +57,11 @@ deb:publish:
     - for f in "dist/${SUITE}/main/binary-amd64/${VERSION}_all.deb" $(find -type f | grep -v -E "\.deb$"); do mc cp -r -q "$f" "minio/updates.signald.org/$f"; done
   dependencies:
     - deb:build
+
+deb:cleanup:
+  stage: cleanup
+  image: registry.git.callpipe.com/finn/debian-repo-builder:latest
+  before_script:
+    - mc config host add minio "${MINIO_URL}" "${MINIO_ACCESS_KEY}" "${MINIO_SECRET_KEY}"
+  script:
+    - repo-cron minio/updates.signald.org
