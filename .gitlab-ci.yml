@@ -46,13 +46,13 @@ deb:publish:
   before_script:
     - mc config host add minio "${MINIO_URL}" "${MINIO_ACCESS_KEY}" "${MINIO_SECRET_KEY}"
     - export SUITE=$(get-suite)
+    - export VERSION=$(./version.sh)
     - mkdir -p public/dists/${SUITE}/
     - mc cp -r -q "minio/updates.signald.org/dists/${SUITE}/" public/ || true
     - cd public
   script:
     - release-deb ../ D89FFB45291229A410A1430A659475081F665F29
     - gpg --homedir /opt/signing-keys/.gnupg --export --armor D89FFB45291229A410A1430A659475081F665F29 > apt-signing-key.asc
-    - mc cp -r -q "dists/${SUITE}/main/binary-amd64/" "minio/updates.signald.org/dists/${SUITE}/main/binary-amd64/"
-    - mc cp -r -q . minio/updates.signald.org/
+    - for f in dist/${SUITE}/main/binary-amd64/${VERSION}_* $(find -type f | grep -v -E "\.deb$"); do mc cp -r -q "$f" "minio/updates.signald.org/$f"; done
   dependencies:
     - deb:build
