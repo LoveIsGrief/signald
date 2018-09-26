@@ -1,3 +1,5 @@
+.PHONY: all deb installDist distTar clean
+
 export VERSION ?= $(shell ./version.sh)
 export CI_PROJECT_NAME ?= signald
 GRADLE=gradle

@@ -1,8 +1,7 @@
 #!/usr/bin/make -f
 # -*- makefile -*-
 
-# Uncomment this to turn on verbose mode.
-#export DH_VERBOSE=1
+export DH_VERBOSE=1
 
 %:
 	dh $@ --with javahelper --with systemd # use the javahelper extension
@@ -18,7 +17,3 @@ override_dh_auto_install:
 	# export UPSTART_TARGET_DIR=debian/my_project/etc/init/; \
 	# mkdir -p $${UPSTART_TARGET_DIR}; \
 	# install -m 644 debian/my_project.conf $${UPSTART_TARGET_DIR};
-
-# additional install target of javahelper
-override_jh_installlibs:
-	dh_link debian/signald/var/lib/signald/bin/signald debian/signald/usr/bin/signald
