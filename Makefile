@@ -16,3 +16,7 @@ deb:
 
 installDist distTar:
 	$(GRADLE) $@
+
+setup:
+	sudo mkdir -p /var/run/signald
+	sudo chown $(shell whoami) /var/run/signald
