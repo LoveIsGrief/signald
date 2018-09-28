@@ -4,24 +4,17 @@ signald is a daemon that facilitates communication over Signal.
 
 
 ## Quick Start
-1. Run `./gradlew installDist` to build signald
-1. Run `build/install/signald/bin/signald signald.sock` to start signald. It will continue running until killed (or ctrl-C)
-1. In a second terminal window, connect to the signald control socket: `nc -U signald.sock`
+1. Run `make installDist` to build signald
+1. Run `sudo mkdir /var/run/signald && sudo chown $(whoami) /var/run/signald`
+1. Run `build/install/signald/bin/signald` to start signald. It will continue running until killed (or ctrl-C)
+1. In a second terminal window, connect to the signald control socket: `nc -U /var/run/signald/signald.sock`
 1. Register a new number on signal by typing this: `{"type": "register", "username": "+12024561414"}` (replace `+12024561414` with your own number)
 1. Once you receive the verification text, submit it like this: `{"type": "verify", "username": "+12024561414", "code": "000-000"}` where `000-000` is the verification code.
 1. Incoming messages will be sent to the socket and shown on your screen. To send a message, use something like this:
 
 ```json
-{
-  "type": "send",
-  "username": "+12024561414",
-  "recipientNumber": "+14235290302",
-  "messageBody": "Hello, Dave"
-}
+{"type": "send", "username": "+12024561414", "recipientNumber": "+14235290302", "messageBody": "Hello, Dave"}
 ```
-
-*However, it must all be sent on a single line* otherwise signald will attempt to interpret each line as json.
-
 
 ## Control Messages
 Each message sent to the control socket must be valid JSON and have a `type` field. The possible message types and their
@@ -130,6 +123,45 @@ Returns all known identities/keys for a given number.
 | `username` | `string` | yes | The local account to use to check the identity |
 | `recipientNumber` | `string` | yes | The full number to look up. |
 
+### `version`
+
+Returns the version of signald in use
+
+### `list_contacts`
+
+Lists all of the contacts in the contact store for the specified user.
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `username` | `string` | yes | The account to list the contacts of |
+
+### `sync_contacts`
+
+Sends a contact sync request to the other devices on this account.
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `username` | `string` | yes | The account to sync contacts for. |
+
+## Debian Installation
+
+Add the following to your `sources.list`:
+
+```
+deb https://updates.signald.org stable main
+```
+
+And trust the signing key:
+
+```
+curl https://updates.signald.org/apt-signing-key.asc | sudo apt-key add -
+```
+
+Now you can install signald:
+
+```
+sudo apt install signald
+```
 ## License
 This software is licensed under the GPLv3. It is based on [signal-cli](https://github.com/Asamk/signal-cli)
 

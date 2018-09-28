@@ -17,6 +17,8 @@
 
 package io.finn.signald;
 
+import io.finn.signald.BuildConfig;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.Socket;
@@ -29,13 +31,16 @@ import org.newsclub.net.unix.AFUNIXSocketAddress;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import io.sentry.Sentry;
 
 public class Main {
 
   private static final Logger logger = LogManager.getLogger("signald");
 
   public static void main(String[] args) {
+    logger.info("Starting " + BuildConfig.NAME + " " + BuildConfig.VERSION);
     try {
+      Sentry.init();
       String socket_path = "/var/run/signald/signald.sock";
       if(args.length > 0) {
         socket_path = args[0];
@@ -69,10 +74,11 @@ public class Main {
       }
 
       while (!Thread.interrupted()) {
-        logger.info("Waiting for connection...");
         try {
           Socket socket = server.accept();
           socketmanager.add(socket);
+
+          logger.info("Accepted socket connection");
 
           // Kick off the thread to read input
           Thread socketHandlerThread = new Thread(new SocketHandler(socket, managers), "socketlistener");

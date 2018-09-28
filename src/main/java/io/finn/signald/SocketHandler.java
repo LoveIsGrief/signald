@@ -70,15 +70,20 @@ public class SocketHandler implements Runnable {
   }
 
   public void run() {
+    try {
+      this.reply("version", new JsonVersionMessage(), null);
+    } catch(JsonProcessingException e) {
+      handleError(e, null);
+    }
     while(true) {
       String line = null;
       JsonRequest request;
       try {
         line = this.reader.readLine();
-	if(line == null) {
-	  this.reader.close();
-	  this.writer.close();
-	  return;
+        if(line == null) {
+          this.reader.close();
+          this.writer.close();
+          return;
         }
         if(!line.equals("")) {
             logger.debug(line);
@@ -135,6 +140,12 @@ public class SocketHandler implements Runnable {
         setProfile(request);
       case "sync_contacts":
         syncContacts(request);
+        break;
+      case "list_contacts":
+        listContacts(request);
+        break;
+      case "version":
+        version();
         break;
       default:
         logger.warn("Unknown command type " + request.type);
@@ -205,9 +216,12 @@ public class SocketHandler implements Runnable {
     if(this.managers.containsKey(username)) {
       return this.managers.get(username);
     } else {
+      logger.info("Creating a manager for " + username);
       Manager m = new Manager(username, settingsPath);
       if(m.userExists()) {
         m.init();
+      } else {
+        logger.warn("Created manager for a user that doesn't exist! (" + username + ")");
       }
       this.managers.put(username, m);
       return m;
@@ -294,7 +308,7 @@ public class SocketHandler implements Runnable {
     Manager m = getManager(request.username);
     Optional<ContactTokenDetails> contact = m.getUser(request.recipientNumber);
     if(contact.isPresent()) {
-      this.reply("user", new JsonContact(contact.get()), request.id);
+      this.reply("user", new JsonContactTokenDetails(contact.get()), request.id);
     } else {
       this.reply("user_not_registered", null, request.id);
     }
@@ -316,6 +330,15 @@ public class SocketHandler implements Runnable {
     Manager m = getManager(request.username);
     m.requestSyncContacts();
     this.reply("sync_requested", null, request.id);
+  }
+
+  private void listContacts(JsonRequest request) throws IOException {
+    Manager m = getManager(request.username);
+    this.reply("contact_list", m.getContacts(), request.id);
+  }
+
+  private void version() throws IOException {
+      this.reply("version", new JsonVersionMessage(), null);
   }
 
   private void handleError(Throwable error, JsonRequest request) {

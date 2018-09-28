@@ -301,6 +301,7 @@ class Manager {
             contactStore = jsonProcessor.convertValue(contactStoreNode, JsonContactsStore.class);
         }
         if (contactStore == null) {
+            logger.info("No contactStore been loaded");
             contactStore = new JsonContactsStore();
         }
         JsonNode threadStoreNode = rootNode.get("threadStore");
@@ -439,6 +440,7 @@ class Manager {
         requestSyncContacts();
 
         save();
+        logger.info("Successfully finished linked to " + username + " as device #" + deviceId);
     }
 
     public List<DeviceInfo> getLinkedDevices() throws IOException {
@@ -1547,6 +1549,15 @@ class Manager {
     private void sendVerifiedMessage(String destination, IdentityKey identityKey, TrustLevel trustLevel) throws IOException, UntrustedIdentityException {
         VerifiedMessage verifiedMessage = new VerifiedMessage(destination, identityKey, trustLevel.toVerifiedState(), System.currentTimeMillis());
         sendSyncMessage(SignalServiceSyncMessage.forVerified(verifiedMessage));
+    }
+
+    public List<ContactInfo> getContacts() {
+      if(contactStore == null) {
+        logger.warn("contactStore is null what tf!");
+        return Collections.<ContactInfo>emptyList();
+      }
+      List<ContactInfo> contacts = this.contactStore.getContacts();
+      return contacts;
     }
 
     public ContactInfo getContact(String number) {
