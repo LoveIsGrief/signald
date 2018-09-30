@@ -143,6 +143,7 @@ class Manager {
     private SignalServiceMessagePipe messagePipe = null;
 
     public Manager(String username, String settingsPath) {
+        logger.info("Creating new manager for " + username + " (stored at " + settingsPath + ")");
         this.username = username;
         this.settingsPath = settingsPath;
         this.dataPath = this.settingsPath + "/data";

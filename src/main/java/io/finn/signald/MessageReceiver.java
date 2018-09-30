@@ -60,30 +60,43 @@ class MessageReceiver implements Manager.ReceiveMessageHandler, Runnable {
       return removed;
     }
 
+    private Manager getManager(String username) throws IOException {
+      String settingsPath = System.getProperty("user.home") + "/.config/signal";  // TODO: Stop hard coding this everywhere
+
+      if(this.managers.containsKey(username)) {
+        return this.managers.get(username);
+      } else {
+        logger.info("Creating a manager for " + username);
+        Manager m = new Manager(username, settingsPath);
+        if(m.userExists()) {
+          m.init();
+        } else {
+          logger.warn("Created manager for a user that doesn't exist! (" + username + ")");
+        }
+        this.managers.put(username, m);
+        return m;
+      }
+    }
+
+
     public void run() {
       try {
-        String settingsPath = System.getProperty("user.home") + "/.config/signal";
-        this.m = new Manager(this.username, settingsPath);
         Thread.currentThread().setName(this.username + "-manager");
-        logger.info("Created new manager for " + username);
-        this.managers.put(username, m);
-        if(m.userExists()) {
-          this.m.init();
-          while(true) {
-            double timeout = 3600;
-            boolean returnOnTimeout = true;
-            if (timeout < 0) {
-              returnOnTimeout = false;
-              timeout = 3600;
-            }
-            boolean ignoreAttachments = false;
-            try {
-              this.m.receiveMessages((long) (timeout * 1000), TimeUnit.MILLISECONDS, returnOnTimeout, ignoreAttachments, this);
-            } catch (IOException e) {
-                continue;
-            } catch (AssertionError e) {
-                logger.catching(e);
-            }
+        this.m = getManager(this.username);
+        while(true) {
+          double timeout = 3600;
+          boolean returnOnTimeout = true;
+          if (timeout < 0) {
+            returnOnTimeout = false;
+            timeout = 3600;
+          }
+          boolean ignoreAttachments = false;
+          try {
+            this.m.receiveMessages((long) (timeout * 1000), TimeUnit.MILLISECONDS, returnOnTimeout, ignoreAttachments, this);
+          } catch (IOException e) {
+              continue;
+          } catch (AssertionError e) {
+              logger.catching(e);
           }
         }
       } catch (org.whispersystems.signalservice.api.push.exceptions.AuthorizationFailedException e) {

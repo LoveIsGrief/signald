@@ -62,14 +62,7 @@ public class Main {
 
       File[] users = new File(settingsPath + "/data").listFiles();
 
-      if(users != null) {
-         for(int i = 0; i < users.length; i++) {
-           if(!users[i].isDirectory()) {
-             String username = users[i].getName();
-             managers.put(username, new Manager(username, settingsPath));
-           }
-         }
-       } else {
+      if(users == null) {
          logger.warn("No users are currently defined, you'll need to register or link to your existing signal account");
        }
 
@@ -79,7 +72,7 @@ public class Main {
           socketmanager.add(socket);
 
           // Kick off the thread to read input
-          Thread socketHandlerThread = new Thread(new SocketHandler(socket, receivers,  managers), "socketlistener");
+          Thread socketHandlerThread = new Thread(new SocketHandler(socket, receivers, managers), "socketlistener");
           socketHandlerThread.start();
 
         } catch(IOException e) {
