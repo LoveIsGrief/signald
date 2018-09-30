@@ -40,6 +40,7 @@ import java.util.concurrent.TimeoutException;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
+import java.io.File;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
@@ -187,7 +188,16 @@ public class SocketHandler implements Runnable {
     }
   }
 
-  private void listAccounts(JsonRequest request) throws JsonProcessingException {
+  private void listAccounts(JsonRequest request) throws JsonProcessingException, IOException {
+    // We have to create a manager for each account that we're listing, which is all of them :/
+    String settingsPath = System.getProperty("user.home") + "/.config/signal";
+    File[] users = new File(settingsPath + "/data").listFiles();
+    for(int i = 0; i < users.length; i++) {
+      if(!users[i].isDirectory()) {
+        getManager(users[i].getName());
+      }
+    }
+
     JsonAccountList accounts = new JsonAccountList(this.managers, this.subscribedAccounts);
     this.reply("account_list", accounts, request.id);
   }
