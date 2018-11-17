@@ -609,8 +609,7 @@ class Manager {
         return groupStore.getGroups();
     }
 
-    public void sendGroupMessage(String messageText, List<String> attachments,
-                                 byte[] groupId)
+    public void sendGroupMessage(String messageText, List<String> attachments, byte[] groupId, SignalServiceDataMessage.Quote quote)
             throws IOException, EncapsulatedExceptions, GroupNotFoundException, NotAGroupMemberException, AttachmentInvalidException {
         final SignalServiceDataMessage.Builder messageBuilder = SignalServiceDataMessage.newBuilder().withBody(messageText);
         if (attachments != null) {
@@ -621,6 +620,9 @@ class Manager {
                     .withId(groupId)
                     .build();
             messageBuilder.asGroupMessage(group);
+        }
+        if(quote != null) {
+          messageBuilder.withQuote(quote);
         }
         ThreadInfo thread = threadStore.getThread(Base64.encodeBytes(groupId));
         if (thread != null) {

@@ -17,24 +17,20 @@
 
 package io.finn.signald;
 
+import org.whispersystems.signalservice.api.messages.SignalServiceDataMessage;
+import org.whispersystems.signalservice.api.push.SignalServiceAddress;
 import java.util.List;
+import java.util.ArrayList;
 
-class JsonRequest {
-    public String type;
-    public String id;
-    public String username;
-    public String messageBody;
-    public String recipientNumber;
-    public String recipientGroupId;
-    public Boolean voice;
-    public String code;
-    public String deviceName;
-    public List<String> attachmentFilenames;
-    public String uri;
-    public String groupName;
-    public List<String> members;
-    public String avatar;
-    public JsonQuote quote;
 
-    JsonRequest() {}
+class JsonQuote {
+  public long id;
+  public String author;
+  public String text;
+  public List<JsonAttachment> attachments;
+
+  public SignalServiceDataMessage.Quote getQuote() {
+    ArrayList<SignalServiceDataMessage.Quote.QuotedAttachment> attachments = new ArrayList<>();
+    return new SignalServiceDataMessage.Quote(this.id, new SignalServiceAddress(this.author), this.text, attachments);
+  }
 }

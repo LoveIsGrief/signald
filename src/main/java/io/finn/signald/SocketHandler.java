@@ -22,6 +22,8 @@ import org.whispersystems.signalservice.internal.util.Base64;
 import org.whispersystems.libsignal.InvalidKeyException;
 import org.whispersystems.libsignal.util.guava.Optional;
 import org.whispersystems.signalservice.api.push.ContactTokenDetails;
+import org.whispersystems.signalservice.api.messages.SignalServiceDataMessage;
+
 
 import org.asamk.signal.AttachmentInvalidException;
 import org.asamk.signal.UserAlreadyExists;
@@ -179,7 +181,11 @@ public class SocketHandler implements Runnable {
     try {
       if(request.recipientGroupId != null) {
         byte[] groupId = Base64.decode(request.recipientGroupId);
-        manager.sendGroupMessage(request.messageBody, request.attachmentFilenames, groupId);
+        SignalServiceDataMessage.Quote quote = null;
+        if(request.quote != null) {
+          quote = request.quote.getQuote();
+        }
+        manager.sendGroupMessage(request.messageBody, request.attachmentFilenames, groupId, quote);
       } else {
         manager.sendMessage(request.messageBody, request.attachmentFilenames, request.recipientNumber);
       }
