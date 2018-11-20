@@ -146,8 +146,8 @@ public class SocketHandler implements Runnable {
       case "update_group":
         updateGroup(request);
         break;
-      case "update_expiration":
-        updateExpiration(request);
+      case "set_expiration":
+        setExpiration(request);
         break;
       case "list_groups":
         listGroups(request);
@@ -295,7 +295,7 @@ public class SocketHandler implements Runnable {
     }
   }
 
-  private void updateExpiration(JsonRequest request) throws IOException, GroupNotFoundException, NotAGroupMemberException, AttachmentInvalidException, EncapsulatedExceptions, IOException {
+  private void setExpiration(JsonRequest request) throws IOException, GroupNotFoundException, NotAGroupMemberException, AttachmentInvalidException, EncapsulatedExceptions, IOException {
     Manager m = getManager(request.username);
 
     if(request.recipientGroupId != null) {
