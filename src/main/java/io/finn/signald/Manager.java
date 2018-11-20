@@ -786,6 +786,9 @@ class Manager {
         if (attachments != null) {
             messageBuilder.withAttachments(getSignalServiceAttachments(attachments));
         }
+        if(quote != null) {
+          messageBuilder.withQuote(quote);
+        }
         sendMessage(messageBuilder, recipients);
     }
 
