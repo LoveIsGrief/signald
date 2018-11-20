@@ -176,21 +176,17 @@ public class SocketHandler implements Runnable {
     }
   }
 
-  private void send(JsonRequest request) throws IOException {
+  private void send(JsonRequest request) throws IOException, EncapsulatedExceptions, GroupNotFoundException, GroupNotFoundException, AttachmentInvalidException, NotAGroupMemberException {
     Manager manager = getManager(request.username);
-    try {
-      if(request.recipientGroupId != null) {
-        byte[] groupId = Base64.decode(request.recipientGroupId);
-        SignalServiceDataMessage.Quote quote = null;
-        if(request.quote != null) {
-          quote = request.quote.getQuote();
-        }
-        manager.sendGroupMessage(request.messageBody, request.attachmentFilenames, groupId, quote);
-      } else {
-        manager.sendMessage(request.messageBody, request.attachmentFilenames, request.recipientNumber);
-      }
-    } catch(EncapsulatedExceptions | AttachmentInvalidException | GroupNotFoundException | NotAGroupMemberException | IOException e) {
-      logger.catching(e);
+    SignalServiceDataMessage.Quote quote = null;
+    if(request.quote != null) {
+      quote = request.quote.getQuote();
+    }
+    if(request.recipientGroupId != null) {
+      byte[] groupId = Base64.decode(request.recipientGroupId);
+      manager.sendGroupMessage(request.messageBody, request.attachmentFilenames, groupId, quote);
+    } else {
+      manager.sendMessage(request.messageBody, request.attachmentFilenames, request.recipientNumber, quote);
     }
   }
 

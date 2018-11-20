@@ -773,15 +773,14 @@ class Manager {
         sendMessage(messageBuilder, membersSend);
     }
 
-    public void sendMessage(String message, List<String> attachments, String recipient)
+    public void sendMessage(String message, List<String> attachments, String recipient, SignalServiceDataMessage.Quote quote)
             throws EncapsulatedExceptions, AttachmentInvalidException, IOException {
         List<String> recipients = new ArrayList<>(1);
         recipients.add(recipient);
-        sendMessage(message, attachments, recipients);
+        sendMessage(message, attachments, recipients, quote);
     }
 
-    public void sendMessage(String messageText, List<String> attachments,
-                            List<String> recipients)
+    public void sendMessage(String messageText, List<String> attachments, List<String> recipients, SignalServiceDataMessage.Quote quote)
             throws IOException, EncapsulatedExceptions, AttachmentInvalidException {
         final SignalServiceDataMessage.Builder messageBuilder = SignalServiceDataMessage.newBuilder().withBody(messageText);
         if (attachments != null) {
