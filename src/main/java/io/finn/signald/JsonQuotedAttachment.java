@@ -21,20 +21,16 @@ import org.whispersystems.signalservice.api.messages.SignalServiceDataMessage;
 import org.whispersystems.signalservice.api.push.SignalServiceAddress;
 import java.util.List;
 import java.util.ArrayList;
-import java.util.stream.Collectors;
 
 
-class JsonQuote {
-  public long id;
-  public String author;
-  public String text;
-  public List<JsonQuotedAttachment> attachments;
+class JsonQuotedAttachment {
+  public String contentType;
+  public String fileName;
+  public String thumbnail;
 
-  public SignalServiceDataMessage.Quote getQuote() {
-    ArrayList<SignalServiceDataMessage.Quote.QuotedAttachment> quotedAttachments = new ArrayList<SignalServiceDataMessage.Quote.QuotedAttachment>();
-    for(JsonQuotedAttachment attachment : this.attachments) {
-      quotedAttachments.add(attachment.getAttachment());
-    }
-    return new SignalServiceDataMessage.Quote(this.id, new SignalServiceAddress(this.author), this.text, quotedAttachments);
+  public SignalServiceDataMessage.Quote.QuotedAttachment getAttachment() {
+    // FileInputStream thumbnailFile = new FileInputStream(this.thumbnail);
+    // SignalServiceAttachmentStream thumbnail = new SignalServiceAttachmentStream(thumbnailFile, this.contentType, thumbnailFile.length,this.Filename, false, null, 0, 0, null, null);
+    return new SignalServiceDataMessage.Quote.QuotedAttachment(this.contentType, this.fileName, null);
   }
 }
