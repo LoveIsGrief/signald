@@ -300,7 +300,7 @@ public class SocketHandler implements Runnable {
 
     if(request.recipientGroupId != null) {
       byte[] groupId = Base64.decode(request.recipientGroupId);
-      m.setGroupExpiration(groupId, request.expiresInSeconds);
+      m.setExpiration(groupId, request.expiresInSeconds);
     } else {
       m.setExpiration(request.recipientNumber, request.expiresInSeconds);
     }
