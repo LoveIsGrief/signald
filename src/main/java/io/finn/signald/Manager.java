@@ -773,7 +773,7 @@ class Manager {
         List<String> recipients = new ArrayList<>(1);
         recipients.add(recipient);
 
-        sendMessage(messageBuilder, recipients);
+        sendMessage(messageBuilder, recipients, false);
     }
 
     private void sendGroupInfoRequest(byte[] groupId, String recipient) throws IOException, EncapsulatedExceptions {
@@ -906,7 +906,13 @@ class Manager {
         }
     }
 
+
     private void sendMessage(SignalServiceDataMessage.Builder messageBuilder, Collection<String> recipients)
+            throws EncapsulatedExceptions, IOException {
+        sendMessage(messageBuilder, recipients, true);
+    }
+
+    private void sendMessage(SignalServiceDataMessage.Builder messageBuilder, Collection<String> recipients, boolean useExistingExpiration)
             throws EncapsulatedExceptions, IOException {
         Set<SignalServiceAddress> recipientsTS = getSignalServiceAddresses(recipients);
         if (recipientsTS == null) return;
@@ -932,10 +938,12 @@ class Manager {
                 List<NetworkFailureException> networkExceptions = new LinkedList<>();
                 for (SignalServiceAddress address : recipientsTS) {
                     ThreadInfo thread = threadStore.getThread(address.getNumber());
-                    if (thread != null) {
-                        messageBuilder.withExpiration(thread.messageExpirationTime);
-                    } else {
-                        messageBuilder.withExpiration(0);
+                    if(useExistingExpiration) {
+                        if (thread != null) {
+                            messageBuilder.withExpiration(thread.messageExpirationTime);
+                        } else {
+                            messageBuilder.withExpiration(0);
+                        }
                     }
                     message = messageBuilder.build();
                     try {
