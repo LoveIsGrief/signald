@@ -754,6 +754,22 @@ class Manager {
                 .asGroupMessage(group.build());
     }
 
+    public void setGroupExpiration(byte[] groupId, int expiresInSeconds) throws IOException, GroupNotFoundException, NotAGroupMemberException, AttachmentInvalidException, EncapsulatedExceptions {
+        if (groupId == null) {
+            return;
+        }
+        GroupInfo g = getGroupForSending(groupId);
+
+        SignalServiceDataMessage.Builder messageBuilder = getGroupUpdateMessageBuilder(g);
+
+        messageBuilder.asExpirationUpdate().withExpiration(expiresInSeconds);
+        sendMessage(messageBuilder, new ArrayList<>(g.members));
+    }
+
+    public void setExpiration(String number, int expiresInSeconds) {
+      
+    }
+
     private void sendGroupInfoRequest(byte[] groupId, String recipient) throws IOException, EncapsulatedExceptions {
         if (groupId == null) {
             return;
