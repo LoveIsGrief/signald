@@ -28,7 +28,7 @@ class JsonQuote {
   public long id;
   public String author;
   public String text;
-  public List<JsonQuotedAttachment> attachments;
+  public List<JsonQuotedAttachment> attachments = new ArrayList<>();
 
   public SignalServiceDataMessage.Quote getQuote() {
     ArrayList<SignalServiceDataMessage.Quote.QuotedAttachment> quotedAttachments = new ArrayList<SignalServiceDataMessage.Quote.QuotedAttachment>();
