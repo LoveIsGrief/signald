@@ -35,6 +35,7 @@ class JsonRequest {
     public List<String> members;
     public String avatar;
     public JsonQuote quote;
+    public int expiresInSeconds;
 
     JsonRequest() {}
 }
