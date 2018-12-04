@@ -17,6 +17,7 @@
 
 package io.finn.signald;
 
+import org.whispersystems.signalservice.api.crypto.UntrustedIdentityException;
 import org.whispersystems.signalservice.api.push.exceptions.EncapsulatedExceptions;
 import org.whispersystems.signalservice.internal.util.Base64;
 import org.whispersystems.libsignal.InvalidKeyException;
@@ -184,7 +185,7 @@ public class SocketHandler implements Runnable {
     }
   }
 
-  private void send(JsonRequest request) throws IOException, EncapsulatedExceptions, GroupNotFoundException, GroupNotFoundException, AttachmentInvalidException, NotAGroupMemberException {
+  private void send(JsonRequest request) throws IOException, EncapsulatedExceptions, UntrustedIdentityException, UntrustedIdentityException, GroupNotFoundException, GroupNotFoundException, AttachmentInvalidException, NotAGroupMemberException {
     Manager manager = getManager(request.username);
     SignalServiceDataMessage.Quote quote = null;
     if(request.quote != null) {
@@ -267,7 +268,7 @@ public class SocketHandler implements Runnable {
     }
   }
 
-  private void updateGroup(JsonRequest request) throws IOException, EncapsulatedExceptions, GroupNotFoundException, AttachmentInvalidException, NotAGroupMemberException {
+  private void updateGroup(JsonRequest request) throws IOException, EncapsulatedExceptions, UntrustedIdentityException, UntrustedIdentityException, GroupNotFoundException, AttachmentInvalidException, NotAGroupMemberException {
     Manager m = getManager(request.username);
 
     byte[] groupId = null;
@@ -302,7 +303,7 @@ public class SocketHandler implements Runnable {
     }
   }
 
-  private void setExpiration(JsonRequest request) throws IOException, GroupNotFoundException, NotAGroupMemberException, AttachmentInvalidException, EncapsulatedExceptions, IOException {
+  private void setExpiration(JsonRequest request) throws IOException, GroupNotFoundException, NotAGroupMemberException, AttachmentInvalidException, UntrustedIdentityException, EncapsulatedExceptions, IOException {
     Manager m = getManager(request.username);
 
     if(request.recipientGroupId != null) {
@@ -320,7 +321,7 @@ public class SocketHandler implements Runnable {
     this.reply("group_list", new JsonGroupList(m), request.id);
   }
 
-  private void leaveGroup(JsonRequest request) throws IOException, JsonProcessingException, GroupNotFoundException, EncapsulatedExceptions, NotAGroupMemberException {
+  private void leaveGroup(JsonRequest request) throws IOException, JsonProcessingException, GroupNotFoundException, UntrustedIdentityException, NotAGroupMemberException, EncapsulatedExceptions {
     Manager m = getManager(request.username);
     byte[] groupId = Base64.decode(request.recipientGroupId);
     m.sendQuitGroupMessage(groupId);
