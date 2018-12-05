@@ -52,6 +52,7 @@ deb:publish:
     - cd public
     - release-deb ../ "${SIGNING_KEY}"
     - gpg --export --armor "${SIGNING_KEY}" > apt-signing-key.asc
+    - find .
     - for f in apt-signing-key.asc dists/${SUITE}/main/binary-amd64/signald_${VERSION}* $(find dists/ -type f | grep -v -E "\.deb$"); do mc cp -q "$f" "minio/updates.signald.org/$f"; done
   artifacts:
     paths:
