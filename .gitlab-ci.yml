@@ -67,6 +67,8 @@ deb:publish:
 
 test:integration:
   stage: test
+  before_script:
+    - keytool -storetype BKS -provider org.bouncycastle.jce.provider.BouncyCastleProvider -providerpath build/install/signald/lib/bcprov-jdk15on-1.55.jar -keystore src/main/resources/io/finn/signald/whisper.store -storepass whisper -import -noprompt -alias isrg-root-x1 -file src/integration-tests/resources/isrg.pem
   script:
     - ./gradlew integrationTest
   artifacts:
