@@ -72,7 +72,7 @@ test:integration:
     paths:
       - build/
     reports:
-      junit: b.uild/test-results/integrationTest/TEST-io.finn.signald.TestRequest.xml
+      junit: build/test-results/integrationTest/TEST-io.finn.signald.TestRequest.xml
   dependencies:
     - build
 
