@@ -22,6 +22,9 @@ build:
     - apt update && apt install -y make
   script:
     - make installDist
+  artifacts:
+    paths:
+      - build/
 
 deb:build:
   stage: build
@@ -60,6 +63,18 @@ deb:publish:
       - "signald_*.sig"
   dependencies:
     - deb:build
+
+test:integration:
+  stage: test
+  script:
+    - ./gradlew integrationTest
+  artifacts:
+    paths:
+      - build/
+    reports:
+      junit: b.uild/test-results/integrationTest/TEST-io.finn.signald.TestRequest.xml
+  dependencies:
+    - build
 
 deb:cleanup:
   stage: cleanup
