@@ -29,6 +29,7 @@ build:
 deb:build:
   stage: build
   image: registry.git.callpipe.com/finn/debian-repo-builder:latest
+  allow_failure: true  # TODO: Disallow failure when the same build.gradle file can be used to run the tests *and* build the deb - currently the config to run the tests requires gradle 4.6+ and Debian Sid only has gradle 4.4
   before_script:
     - export VERSION=$(./version.sh)
     - echo "Building signald version $VERSION"
