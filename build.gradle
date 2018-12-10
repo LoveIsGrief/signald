@@ -18,11 +18,11 @@ repositories {
 
 dependencies {
     compile 'com.github.turasa:signal-service-java:2.12.2_unofficial_1'
-    compile 'org.bouncycastle:bcprov-jdk15on:1.55'
+    compile 'org.bouncycastle:bcprov-jdk15on:1.60'
     compile 'com.kohlschutter.junixsocket:junixsocket-native-common:2.0.4'
-    compile 'org.apache.logging.log4j:log4j-api:2.10.0'
+    compile 'org.apache.logging.log4j:log4j-api:2.9.1'
     compile 'org.apache.logging.log4j:log4j-core:2.10.0'
-    compile 'io.sentry:sentry-log4j2:1.6.4'
+    compile 'io.sentry:sentry-log4j2:1.7.9'
 }
 
 
@@ -48,5 +48,44 @@ jar {
                 'Implementation-Version': project.version,
                 'Main-Class': project.mainClassName,
         )
+    }
+}
+
+// Find any 3rd party libraries which have released new versions
+// to the central Maven repo since we last upgraded.
+// http://daniel.gredler.net/2011/08/08/gradle-keeping-libraries-up-to-date/
+task checkLibVersions {
+    doLast {
+        def checked = [:]
+        allprojects {
+            configurations.each { configuration ->
+                configuration.allDependencies.each { dependency ->
+                    def version = dependency.version
+                    if (!version.contains('SNAPSHOT') && !checked[dependency]) {
+                        def group = dependency.group
+                        def path = group.replace('.', '/')
+                        def name = dependency.name
+                        def url = "http://repo1.maven.org/maven2/$path/$name/maven-metadata.xml"
+                        try {
+                            def metadata = new XmlSlurper().parseText(url.toURL().text)
+                            def versions = metadata.versioning.versions.version.collect { it.text() }
+                            versions.removeAll { it.toLowerCase().contains('alpha') }
+                            versions.removeAll { it.toLowerCase().contains('beta') }
+                            versions.removeAll { it.toLowerCase().contains('rc') }
+                            def newest = versions.max()
+                            if (version != newest) {
+                                /* def upgradejson = new groovy.json.JsonBuilder({"test": "omg"}) */
+                                println "UPGRADE {\"group\": \"$group\", \"name\": \"$name\", \"current\": \"$version\", \"latest\": \"$newest\"}"
+                            }
+                        } catch (FileNotFoundException e) {
+                            logger.debug "Unable to download $url: $e.message"
+                        } catch (org.xml.sax.SAXParseException e) {
+                            logger.debug "Unable to parse $url: $e.message"
+                        }
+                        checked[dependency] = true
+                    }
+                }
+            }
+        }
     }
 }

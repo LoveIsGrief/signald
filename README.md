@@ -1,5 +1,6 @@
 # signald - An (unofficial) Signal Daemon
 
+
 signald is a daemon that facilitates communication over Signal.
 
 
@@ -19,7 +20,31 @@ signald is a daemon that facilitates communication over Signal.
 {"type": "send", "username": "+12024561414", "recipientNumber": "+14235290302", "messageBody": "Hello, Dave"}
 ```
 
-## Control Messages
+## Contributing
+[Issues and MRs are accepted via GitLab.com](https://gitlab.com/thefinn93/signald). There is an IRC channel, `#signald` on Freenode,
+for those that go for that sort of thing. MRs gladly accepted.
+
+
+## Stability
+This is currently beta software. The public API may have backwards-incompatible, breaking changes before it stabilizes, although we will make an
+effort to not do that. Further, there are no guarantees of safety or security with this software.
+
+## Interacting with signald
+
+### Use a library
+signald's protocol can be somewhat annoying to interact with, and several libraries are available to assist with that:
+
+* Python:
+  * [pysignald](https://pypi.org/project/pysignald/) - a third party signald library in python
+  * [Janky Signal Bot Framework](https://github.com/JankySolutions/SignalBotFramework) - a janky framework for writing simple call and response bots
+* Go:
+  * [signald-go](https://git.callpipe.com/finn/signald-go) - a signald library in go
+
+### Write a library
+When started, signald will create a unix socket at `/var/run/signald/signald.sock` (can be overridden on the command line).
+To interact with it, connect to that socket and send new line (`\n`) terminated JSON strings. The specific protocol is described below.
+
+## Socket protocol.
 Each message sent to the control socket must be valid JSON and have a `type` field. The possible message types and their
 arguments are enumerated below. All messages may optionally include an `id` field. When signald follows up on a previous
 command, it will include the same `id` value. Most commands (but not all) require `username` field, which is the number
@@ -38,6 +63,7 @@ Sends a signal message to another user or a group. Possible values are:
 | `quote` | quote | no | The message to quote |
 
 **Quote objects** can have these keys:
+
 | Field | Type   | Required? | Description |
 |-------|--------|-----------|-------------|
 | `id`  | number | yes\*      | The timestamp of the original message. |
@@ -45,14 +71,16 @@ Sends a signal message to another user or a group. Possible values are:
 | `text` | string | yes\*     | The text of the quoted message. |
 | `attachments` | list of quoted attachments | no | A list of attachments in the quoted message. |
 
+\* If you don't put these values it will send it but the Signal app doesn't seem to render it (Signal Desktop does though?)
+
+
 **Quoted** attachment objects can have these keys:
+
 | Field | Type   | Required? | Description |
 |-------|--------|-----------|-------------|
 | `contentType` | string | yes | The content type of the quoted attachment |
 | `fileName` | string | no | The original filename of the quoted attachment |
 
-
-\*If you don't put these values it will send it but the Signal app doesn't seem to render it (Signal Desktop does though?)
 
 ### `register`
 
