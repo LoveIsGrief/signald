@@ -19,7 +19,7 @@ cache:
 build:
   stage: build
   before_script:
-    - apt update && apt install -y make
+    - apt-get update && apt-get install -y make
   script:
     - make installDist
   artifacts:
@@ -70,7 +70,8 @@ test:integration:
   before_script:
     - keytool -storetype BKS -provider org.bouncycastle.jce.provider.BouncyCastleProvider -providerpath build/install/signald/lib/bcprov-jdk15on-1.55.jar -keystore src/main/resources/io/finn/signald/whisper.store -storepass whisper -import -noprompt -alias isrg-root-x1 -file src/integration-tests/resources/isrg.pem
   script:
-    - ./gradlew integrationTest
+    - keytool -storetype BKS -provider org.bouncycastle.jce.provider.BouncyCastleProvider -providerpath ./build/install/signald/lib/bcprov-jdk15on-1.55.jar -keystore ./src/main/resources/io/finn/signald/whisper.store -storepass whisper -import -noprompt -alias isrg-root-x1 -file tools/isrgrootx1.pem
+    - SIGNAL_URL=${SIGNAL_TEST_SERVER} ./gradlew integrationTest
   artifacts:
     paths:
       - build/
