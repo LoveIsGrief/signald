@@ -16,7 +16,7 @@ deb:
 	gbp dch --verbose --ignore-branch --debian-tag="%(version)s" --git-author --new-version=$(VERSION)
 	dpkg-buildpackage -us -uc -b
 
-installDist distTar:
+installDist distTar integrationTest:
 	$(GRADLE) $@
 
 setup:

@@ -19,6 +19,10 @@ import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class TestRequest {
 
@@ -27,13 +31,15 @@ public class TestRequest {
     private AFUNIXSocket socket;
     private PrintWriter writer;
     private BufferedReader reader;
+    static final Logger logger = LoggerFactory.getLogger(TestRequest.class);
 
     @BeforeAll
     public void startSignald() throws InterruptedException {
         this.signaldMain = new Thread(new RunnableMain(SOCKET_FILE.getAbsolutePath()), "main");
         this.signaldMain.start();
         while(!SOCKET_FILE.exists()) {
-          TimeUnit.SECONDS.sleep(1);
+            logger.info("Waiting for " + SOCKET_FILE.getAbsolutePath() + " to exist...");
+            TimeUnit.SECONDS.sleep(1);
         }
     }
 
@@ -47,7 +53,7 @@ public class TestRequest {
         this.socket = AFUNIXSocket.newInstance();
         this.socket.connect(new AFUNIXSocketAddress(SOCKET_FILE));
 
-        this.writer = new PrintWriter(this.socket.getOutputStream());
+        this.writer = new PrintWriter(this.socket.getOutputStream(), true);
         this.reader = new BufferedReader(new InputStreamReader(this.socket.getInputStream()));
         System.out.println(this.reader.readLine());
     }
@@ -60,8 +66,10 @@ public class TestRequest {
 
     @DisplayName("Register a new account")
     @Test
-    public void testRegister() {
+    public void testRegister() throws IOException {
         this.writer.println("{\"type\": \"register\", \"username\": \"tbd\"}");
+	String response = this.reader.readLine();
+	logger.info("Received response: "  + response);
     }
 
 }
