@@ -4,26 +4,37 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.TestInstance;
-import static org.junit.jupiter.api.Assertions.fail;
 
 import org.newsclub.net.unix.AFUNIXSocket;
+import org.newsclub.net.unix.AFUNIXSocketAddress;
 
+import java.io.File;
+import java.io.BufferedReader;
 import java.io.PrintWriter;
+import java.io.InputStreamReader;
+import java.io.IOException;
+import java.util.concurrent.TimeUnit;
+
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class TestRequest {
 
     private Thread signaldMain;
-    private static String SOCKET_PATH = "/tmp/signald.sock";
+    private static File SOCKET_FILE = new File(System.getProperty("java.io.tmpdir"), "signald.sock");
     private AFUNIXSocket socket;
     private PrintWriter writer;
-    private PrintReader reader;
+    private BufferedReader reader;
 
     @BeforeAll
-    public void startSignald() {
-        this.signaldMain = new Thread(new RunnableMain(SOCKET_PATH), "main");
+    public void startSignald() throws InterruptedException {
+        this.signaldMain = new Thread(new RunnableMain(SOCKET_FILE.getAbsolutePath()), "main");
         this.signaldMain.start();
+        while(!SOCKET_FILE.exists()) {
+          TimeUnit.SECONDS.sleep(1);
+        }
     }
 
     @AfterAll
@@ -32,17 +43,19 @@ public class TestRequest {
     }
 
     @BeforeEach
-    public void connectSocket() {
-        this.socket.connect(SOCKET_PATH);
-        this.writer = new PrintWriter(this.socket.getOutputStream);
-        this.reader = new PrintReader(this.socket.getInputStream);
+    public void connectSocket() throws IOException {
+        this.socket = AFUNIXSocket.newInstance();
+        this.socket.connect(new AFUNIXSocketAddress(SOCKET_FILE));
+
+        this.writer = new PrintWriter(this.socket.getOutputStream());
+        this.reader = new BufferedReader(new InputStreamReader(this.socket.getInputStream()));
         System.out.println(this.reader.readLine());
     }
 
 
     @AfterEach
-    public void disconnectSocket() {
-        this.socket.disconnect();
+    public void disconnectSocket() throws IOException {
+        this.socket.close();
     }
 
     @DisplayName("Register a new account")
