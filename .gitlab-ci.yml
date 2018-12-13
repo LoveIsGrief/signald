@@ -73,8 +73,6 @@ test:integration:
   script:
     - SIGNAL_URL=${SIGNAL_TEST_SERVER} ./gradlew integrationTest --info
   artifacts:
-    paths:
-      - build/
     reports:
       junit: build/test-results/integrationTest/TEST-io.finn.signald.TestRequest.xml
   dependencies:
