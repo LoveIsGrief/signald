@@ -70,7 +70,7 @@ test:integration:
   before_script:
     - cp tools/log4j2.xml src/main/resources/log4j2.xml
     - ./gradlew installDist  # must be run before keytool to download the BouncyCastle jar
-    - keytool -storetype BKS -provider org.bouncycastle.jce.provider.BouncyCastleProvider -providerpath build/install/signald/lib/bcprov-jdk15on-1.60.jar -keystore src/main/resources/io/finn/signald/whisper.store -storepass whisper -import -noprompt -alias isrg-root-x1 -file src/integration-tests/resources/isrg.pem
+    - keytool -storetype BKS -provider org.bouncycastle.jce.provider.BouncyCastleProvider -providerpath build/install/signald/lib/bcprov-jdk15on-1.60.jar -keystore src/main/resources/io/finn/signald/whisper.store -storepass whisper -import -noprompt -alias isrg-root-x1 -file tools/letsencrypt-x3.pem
   script:
     - ./gradlew clean integrationTest --info
   variables:
