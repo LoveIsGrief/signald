@@ -68,10 +68,13 @@ deb:publish:
 test:integration:
   stage: test
   before_script:
-    - ./gradlew installDist
+    - cp tools/log4j2.xml src/main/resources/log4j2.xml
+    - ./gradlew installDist  # must be run before keytool to download the BouncyCastle jar
     - keytool -storetype BKS -provider org.bouncycastle.jce.provider.BouncyCastleProvider -providerpath build/install/signald/lib/bcprov-jdk15on-1.60.jar -keystore src/main/resources/io/finn/signald/whisper.store -storepass whisper -import -noprompt -alias isrg-root-x1 -file src/integration-tests/resources/isrg.pem
   script:
-    - SIGNAL_URL=${SIGNAL_TEST_SERVER} ./gradlew integrationTest --info
+    - ./gradlew integrationTest --info
+  variables:
+    SIGNAL_URL: $SIGNAL_TEST_SERVER
   artifacts:
     reports:
       junit: build/test-results/integrationTest/TEST-io.finn.signald.TestRequest.xml

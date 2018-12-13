@@ -145,7 +145,7 @@ class Manager {
     private UptimeSleepTimer sleepTimer = new UptimeSleepTimer();
 
     public Manager(String username, String settingsPath) {
-        logger.info("Creating new manager for " + username + " (stored at " + settingsPath + ")");
+        logger.info("Creating new manager for " + username + " (stored at " + settingsPath + ") with signal server " + URL);
         this.username = username;
         this.settingsPath = settingsPath;
         this.dataPath = this.settingsPath + "/data";
