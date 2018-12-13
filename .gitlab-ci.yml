@@ -71,7 +71,7 @@ test:integration:
     - ./gradlew installDist
     - keytool -storetype BKS -provider org.bouncycastle.jce.provider.BouncyCastleProvider -providerpath build/install/signald/lib/bcprov-jdk15on-1.60.jar -keystore src/main/resources/io/finn/signald/whisper.store -storepass whisper -import -noprompt -alias isrg-root-x1 -file src/integration-tests/resources/isrg.pem
   script:
-    - SIGNAL_URL=${SIGNAL_TEST_SERVER} ./gradlew integrationTest
+    - SIGNAL_URL=${SIGNAL_TEST_SERVER} ./gradlew integrationTest --info
   artifacts:
     paths:
       - build/
