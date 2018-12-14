@@ -7,6 +7,9 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.Assertions;
+
+
 
 import org.newsclub.net.unix.AFUNIXSocket;
 import org.newsclub.net.unix.AFUNIXSocketAddress;
@@ -22,6 +25,15 @@ import java.util.concurrent.ThreadLocalRandom;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.PropertyAccessor;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.JsonNode;
+
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class TestRequest {
@@ -32,6 +44,7 @@ public class TestRequest {
     private PrintWriter writer;
     private BufferedReader reader;
     static final Logger logger = LoggerFactory.getLogger(TestRequest.class);
+    private ObjectMapper mpr = new ObjectMapper();
 
     public String generateUsername() {
         return String.format("+1202555%04d", ThreadLocalRandom.current().nextInt(0, 10000));
@@ -73,8 +86,8 @@ public class TestRequest {
     public void testRegister() throws IOException {
         String username = generateUsername();
         this.writer.println("{\"type\": \"register\", \"username\": \"" + username + "\"}");
-        String response = this.reader.readLine();
-        logger.info("Received response: "  + response);
+        JsonNode root = mpr.readTree(this.reader.readLine());
+        Assertions.assertEquals(root.findValue("type").textValue(), "verification_required");
     }
 
 }
