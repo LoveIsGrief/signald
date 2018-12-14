@@ -17,7 +17,7 @@ import java.io.PrintWriter;
 import java.io.InputStreamReader;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
-
+import java.util.concurrent.ThreadLocalRandom;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,6 +32,10 @@ public class TestRequest {
     private PrintWriter writer;
     private BufferedReader reader;
     static final Logger logger = LoggerFactory.getLogger(TestRequest.class);
+
+    public String generateUsername() {
+        return String.format("+1202555%04d", ThreadLocalRandom.current().nextInt(0, 10000));
+    }
 
     @BeforeAll
     public void startSignald() throws InterruptedException {
@@ -67,9 +71,10 @@ public class TestRequest {
     @DisplayName("Register a new account")
     @Test
     public void testRegister() throws IOException {
-        this.writer.println("{\"type\": \"register\", \"username\": \"tbd\"}");
-	String response = this.reader.readLine();
-	logger.info("Received response: "  + response);
+        String username = generateUsername();
+        this.writer.println("{\"type\": \"register\", \"username\": \"" + username + "\"}");
+        String response = this.reader.readLine();
+        logger.info("Received response: "  + response);
     }
 
 }
