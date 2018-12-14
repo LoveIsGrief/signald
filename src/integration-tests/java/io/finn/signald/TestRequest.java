@@ -9,8 +9,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.Assertions;
 
-
-
 import org.newsclub.net.unix.AFUNIXSocket;
 import org.newsclub.net.unix.AFUNIXSocketAddress;
 
@@ -26,13 +24,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.PropertyAccessor;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonNode;
+
+import okhttp3.OkHttpClient;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -45,6 +42,7 @@ public class TestRequest {
     private BufferedReader reader;
     static final Logger logger = LoggerFactory.getLogger(TestRequest.class);
     private ObjectMapper mpr = new ObjectMapper();
+    OkHttpClient client = new OkHttpClient();
 
     public String generateUsername() {
         return String.format("+1202555%04d", ThreadLocalRandom.current().nextInt(0, 10000));
@@ -88,6 +86,12 @@ public class TestRequest {
         this.writer.println("{\"type\": \"register\", \"username\": \"" + username + "\"}");
         JsonNode root = mpr.readTree(this.reader.readLine());
         Assertions.assertEquals(root.findValue("type").textValue(), "verification_required");
+
+        String code = getVerificationCode(username);
+
     }
 
+    private String getVerificationCode(String username) {
+        Request request = new Request.Builder().url(BuildConfig.SIGNAL_URL + "/").build();
+    }
 }
