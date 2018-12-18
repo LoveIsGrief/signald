@@ -404,9 +404,9 @@ class Manager {
         accountManager = new SignalServiceAccountManager(serviceConfiguration, username, password, USER_AGENT, sleepTimer);
 
         if (voiceVerification) {
-            accountManager.requestVoiceVerificationCode();
+            accountManager.requestVoiceVerificationCode(Locale.forLanguageTag("en_US"));  // TODO: Allow requester to set the locale
         } else {
-            accountManager.requestSmsVerificationCode();
+            accountManager.requestSmsVerificationCode(true); //  TODO: Allow requester to set androidSmsRetrieverSupported
         }
 
         registered = false;
