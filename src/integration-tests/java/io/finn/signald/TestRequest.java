@@ -27,7 +27,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import okhttp3.OkHttpClient;
-import okhttp3.OkHttpClient;
+import okhttp3.MultipartBody;
+import okhttp3.RequestBody;
 import okhttp3.Request;
 import okhttp3.Response;
 
@@ -89,9 +90,25 @@ public class TestRequest {
 
         String code = getVerificationCode(username);
 
+        System.out.println("Got verification code " + code);
+
+        this.writer.println("{\"type\": \"verify\", \"username\": \"" + username + "\", \"code\": \"" + code + "\"}");
+
+        root = (JsonNode)mpr.readTree(this.reader.readLine());
+        System.out.println(root);
+        Assertions.assertEquals(root.findValue("type").textValue(), "verification_succeeded");
+
     }
 
-    private String getVerificationCode(String username) {
-        Request request = new Request.Builder().url(BuildConfig.SIGNAL_URL + "/").build();
+    private String getVerificationCode(String username) throws IOException {
+        OkHttpClient client = new OkHttpClient();
+
+        RequestBody body = new MultipartBody.Builder().setType(MultipartBody.FORM).addFormDataPart("number", username).build();
+
+        Request request = new Request.Builder().url(BuildConfig.SIGNAL_URL + "/helper/verification-code").post(body).build();
+
+        Response response = client.newCall(request).execute();
+
+        return response.body().string();
     }
 }
