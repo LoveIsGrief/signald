@@ -73,6 +73,8 @@ import org.whispersystems.signalservice.api.SignalServiceMessageReceiver;
 import org.whispersystems.signalservice.api.SignalServiceMessageSender;
 import org.whispersystems.signalservice.api.crypto.SignalServiceCipher;
 import org.whispersystems.signalservice.api.crypto.UntrustedIdentityException;
+import org.whispersystems.signalservice.api.crypto.UnidentifiedAccess;
+import org.whispersystems.signalservice.api.crypto.UnidentifiedAccessPair;
 import org.whispersystems.signalservice.api.messages.*;
 import org.whispersystems.signalservice.api.messages.multidevice.*;
 import org.whispersystems.signalservice.api.push.ContactTokenDetails;
@@ -404,7 +406,7 @@ class Manager {
         accountManager = new SignalServiceAccountManager(serviceConfiguration, username, password, USER_AGENT, sleepTimer);
 
         if (voiceVerification) {
-            accountManager.requestVoiceVerificationCode(Locale.forLanguageTag("en_US"));  // TODO: Allow requester to set the locale
+            accountManager.requestVoiceVerificationCode(Locale.getDefault());  // TODO: Allow requester to set the locale
         } else {
             accountManager.requestSmsVerificationCode(true); //  TODO: Allow requester to set androidSmsRetrieverSupported
         }
@@ -967,7 +969,7 @@ class Manager {
                     }
                     message = messageBuilder.build();
                     try {
-                        messageSender.sendMessage(address, null, message);
+                        messageSender.sendMessage(address, getAccessFor(address), message);
                     } catch (UntrustedIdentityException e) {
                         signalProtocolStore.saveIdentity(e.getE164Number(), e.getIdentityKey(), TrustLevel.UNTRUSTED);
                         untrustedIdentities.add(e);
@@ -1724,5 +1726,28 @@ class Manager {
 
     public Optional<ContactTokenDetails> getUser(String e164number) throws IOException {
         return accountManager.getContact(e164number);
+    }
+
+    private static byte[] getTargetUnidentifiedAccessKey(SignalServiceAddress recipient) {
+        // TODO implement
+        return null;
+    }
+
+    public Optional<UnidentifiedAccessPair> getAccessForSync() {
+        // TODO implement
+        return Optional.absent();
+    }
+
+    public List<Optional<UnidentifiedAccessPair>> getAccessFor(Collection<SignalServiceAddress> recipients) {
+        List<Optional<UnidentifiedAccessPair>> result = new ArrayList<>(recipients.size());
+        for (SignalServiceAddress recipient : recipients) {
+            result.add(Optional.<UnidentifiedAccessPair>absent());
+        }
+        return result;
+    }
+
+    public Optional<UnidentifiedAccessPair> getAccessFor(SignalServiceAddress recipient) {
+        // TODO implement
+        return Optional.absent();
     }
 }
