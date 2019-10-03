@@ -459,27 +459,47 @@ public class Manager {
         }
     }
 
-    public void finishDeviceLink(String deviceName) throws IOException, InvalidKeyException, TimeoutException, UserAlreadyExists {
-        signalingKey = Util.getSecret(52);
-        SignalServiceAccountManager.NewDeviceRegistrationReturn ret = accountManager.finishNewDeviceRegistration(signalProtocolStore.getIdentityKeyPair(), signalingKey, false, true, signalProtocolStore.getLocalRegistrationId(), deviceName);
-        deviceId = ret.getDeviceId();
-        username = ret.getNumber();
-        // TODO do this check before actually registering
-        if (userExists()) {
-            throw new UserAlreadyExists(username, getFileName());
-        }
-        signalProtocolStore = new JsonSignalProtocolStore(ret.getIdentity(), signalProtocolStore.getLocalRegistrationId());
+    // TODO: Maybe track this and introduce JsonLinkStatusHandler
+    public void finishDeviceLink(String deviceName) {
+        Manager m = this;
+        new Thread(new Runnable() {
+            void _run() throws UserAlreadyExists, IOException, InvalidKeyException, TimeoutException {
+                signalingKey = Util.getSecret(52);
+                SignalServiceAccountManager.NewDeviceRegistrationReturn ret = accountManager.finishNewDeviceRegistration(signalProtocolStore.getIdentityKeyPair(), signalingKey, false, true, signalProtocolStore.getLocalRegistrationId(), deviceName);
+                deviceId = ret.getDeviceId();
+                username = ret.getNumber();
+                // TODO do this check before actually registering
+                if (userExists()) {
+                    throw new UserAlreadyExists(username, getFileName());
+                }
+                signalProtocolStore = new JsonSignalProtocolStore(ret.getIdentity(), signalProtocolStore.getLocalRegistrationId());
 
-        registered = true;
-        refreshPreKeys();
+                registered = true;
+                refreshPreKeys();
 
-        initFullAccount();
+                initFullAccount();
 
-        requestSyncGroups();
-        requestSyncContacts();
+                requestSyncGroups();
+                requestSyncContacts();
 
-        save();
-        logger.info("Successfully finished linked to " + username + " as device #" + deviceId);
+                save();
+                ManagerFactory.putManager(m);
+                logger.info("Successfully finished linked to " + username + " as device #" + deviceId);
+            }
+
+            @Override
+            public void run() {
+                try {
+                    _run();
+                } catch (UserAlreadyExists |
+                        InvalidKeyException |
+                        TimeoutException |
+                        IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
+
     }
 
     public List<DeviceInfo> getLinkedDevices() throws IOException {
