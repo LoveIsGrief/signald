@@ -1,6 +1,10 @@
 package io.finn.signald.handlers;
 
 import io.finn.signald.*;
+import org.asamk.signal.AttachmentInvalidException;
+import org.asamk.signal.GroupNotFoundException;
+import org.asamk.signal.NotAGroupMemberException;
+import org.whispersystems.signalservice.api.crypto.UntrustedIdentityException;
 import org.whispersystems.signalservice.api.push.exceptions.EncapsulatedExceptions;
 import org.whispersystems.signalservice.internal.util.Base64;
 
@@ -39,11 +43,12 @@ public class JsonUpdateGroupHandler extends BaseJsonHandler {
     byte[] newGroupId = new byte[0];
     try {
       newGroupId = m.updateGroup(groupId, groupName, groupMembers, groupAvatar);
-    } catch (EncapsulatedExceptions encapsulatedExceptions) {
-      encapsulatedExceptions.printStackTrace();
-      return new JsonMessageWrapper("group_update_error",
-          new JsonStatusMessage(0, encapsulatedExceptions.getMessage())
-      );
+    } catch (EncapsulatedExceptions |
+            GroupNotFoundException |
+            UntrustedIdentityException |
+            NotAGroupMemberException |
+            AttachmentInvalidException e) {
+      return wrapException(e, "group_update_error", request);
     }
 
     if (groupId.length != newGroupId.length) {

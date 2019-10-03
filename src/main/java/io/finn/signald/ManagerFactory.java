@@ -8,7 +8,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class ManagerFactory {
     private static String dataPath;
-    private static ConcurrentHashMap<String, Manager> managers;
+    private static ConcurrentHashMap<String, Manager> managers = new ConcurrentHashMap<String, Manager>();
     private static final Logger logger = LogManager.getLogger();
 
     public static void setDataPath(String path) {

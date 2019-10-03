@@ -25,7 +25,7 @@ import java.util.concurrent.TimeoutException;
 public class JsonLinkingURI {
   public URI uri;
 
-  JsonLinkingURI(URI uri) {
+  public JsonLinkingURI(URI uri) {
     this.uri = uri;
   }
 
