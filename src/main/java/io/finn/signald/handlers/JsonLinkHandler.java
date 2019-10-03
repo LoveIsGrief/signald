@@ -3,6 +3,7 @@ package io.finn.signald.handlers;
 import io.finn.signald.*;
 
 import java.io.IOException;
+import java.net.URI;
 import java.util.concurrent.TimeoutException;
 
 public class JsonLinkHandler extends BaseJsonHandler {
@@ -15,10 +16,10 @@ public class JsonLinkHandler extends BaseJsonHandler {
       deviceName = request.deviceName;
     }
     try {
-      m.getDeviceLinkUri();
+      URI deviceLinkUri = m.getDeviceLinkUri();
       // Async operation
       m.finishDeviceLink(deviceName);
-      return new JsonMessageWrapper("linking_uri", new JsonLinkingURI(m), request.id);
+      return new JsonMessageWrapper("linking_uri", new JsonLinkingURI(deviceLinkUri), request.id);
     } catch (TimeoutException e) {
       return new JsonMessageWrapper("linking_error", new JsonStatusMessage(1, "Timed out while waiting for device to link", request), request.id);
     } catch (IOException e) {
