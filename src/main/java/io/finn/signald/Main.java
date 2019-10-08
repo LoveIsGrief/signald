@@ -17,10 +17,12 @@
 
 package io.finn.signald;
 
+import com.sun.net.httpserver.HttpServer;
 import io.finn.signald.BuildConfig;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.security.Security;
 import java.util.concurrent.ConcurrentHashMap;
@@ -56,10 +58,12 @@ public class Main implements Runnable {
   private boolean verbose = false;
 
   @Option(names={"-s", "--socket"}, description="The path to the socket file")
-  private String socket_path = "/var/run/signald/signald.sock";
+  private String socket_path = "/home/ubuntu/tmp/signald.sock";
+//  private String socket_path = "/var/run/signald/signald.sock";
 
   @Option(names={"-a", "--address"}, description="Address for HTTP server")
   private String ip_port = "127.0.0.1:9696";
+  InetSocketAddress httpSocketAddress;
 
   @Option(names={"-d", "--data"}, description="Data storage location")
   private String data_path = System.getProperty("user.home") + "/.config/signald";
@@ -73,7 +77,8 @@ public class Main implements Runnable {
     }
 
     logger.debug("Starting " + BuildConfig.NAME + " " + BuildConfig.VERSION);
-
+    AFUNIXServerSocket server = null;
+    HttpServer httpServer = null;
     try {
       Sentry.init();
       Sentry.getContext().addExtra("release", BuildConfig.VERSION);
@@ -87,14 +92,17 @@ public class Main implements Runnable {
       Security.addProvider(new BouncyCastleProvider());
 
       SocketManager socketmanager = new SocketManager();
+      treatIpPort();
+      httpServer = HttpServerFactory.create(httpSocketAddress);
       ConcurrentHashMap<String,Manager> managers = new ConcurrentHashMap<String,Manager>();
       ConcurrentHashMap<String,MessageReceiver> receivers = new ConcurrentHashMap<String,MessageReceiver>();
 
       logger.info("Binding to socket " + socket_path);
 
       // Spins up one thread per inbound connection to the control socket
-      AFUNIXServerSocket server = AFUNIXServerSocket.newInstance();
+      server = AFUNIXServerSocket.newInstance();
       server.bind(new AFUNIXSocketAddress(new File(socket_path)));
+
 
       // Spins up one thread per registered signal number, listens for incoming messages
       File[] users = new File(data_path + "/data").listFiles();
@@ -106,7 +114,7 @@ public class Main implements Runnable {
       logger.debug("Using data folder " + data_path);
 
       logger.info("Started " + BuildConfig.NAME + " " + BuildConfig.VERSION);
-
+      httpServer.start();
       while (!Thread.interrupted()) {
         try {
           Socket socket = server.accept();
@@ -122,7 +130,20 @@ public class Main implements Runnable {
       }
     } catch(Exception e) {
       logger.catching(e);
+      try {
+        server.close();
+      } catch (Exception ignored) {
+      }
+      try {
+        httpServer.stop(0);
+      } catch (Exception ignored) {
+      }
       System.exit(1);
     }
+  }
+
+  private void treatIpPort() {
+    String[] split = ip_port.split(":");
+    httpSocketAddress = new InetSocketAddress(split[0], Integer.parseInt(split[1]));
   }
 }

@@ -43,5 +43,5 @@ public class JsonRequest {
     public String fingerprint;
     public ContactInfo contact;
 
-    JsonRequest() {}
+    public JsonRequest() {}
 }
