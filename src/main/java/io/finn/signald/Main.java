@@ -17,7 +17,6 @@
 
 package io.finn.signald;
 
-import com.sun.net.httpserver.HttpServer;
 import io.finn.signald.BuildConfig;
 
 import java.io.File;
@@ -27,6 +26,8 @@ import java.net.Socket;
 import java.security.Security;
 import java.util.concurrent.ConcurrentHashMap;
 
+import io.finn.signald.handlers.http.HttpRegisterHandler;
+import io.finn.signald.handlers.http.HttpVersionHandler;
 import org.newsclub.net.unix.AFUNIXServerSocket;
 import org.newsclub.net.unix.AFUNIXSocketAddress;
 
@@ -45,6 +46,7 @@ import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
+import spark.Spark;
 
 
 @Command(name=BuildConfig.NAME, mixinStandardHelpOptions=true, version=BuildConfig.NAME + " " + BuildConfig.VERSION)
@@ -78,7 +80,6 @@ public class Main implements Runnable {
 
     logger.debug("Starting " + BuildConfig.NAME + " " + BuildConfig.VERSION);
     AFUNIXServerSocket server = null;
-    HttpServer httpServer = null;
     try {
       Sentry.init();
       Sentry.getContext().addExtra("release", BuildConfig.VERSION);
@@ -93,7 +94,7 @@ public class Main implements Runnable {
 
       SocketManager socketmanager = new SocketManager();
       treatIpPort();
-      httpServer = HttpServerFactory.create(httpSocketAddress);
+      initSparkServer();
       ConcurrentHashMap<String,Manager> managers = new ConcurrentHashMap<String,Manager>();
       ConcurrentHashMap<String,MessageReceiver> receivers = new ConcurrentHashMap<String,MessageReceiver>();
 
@@ -114,7 +115,6 @@ public class Main implements Runnable {
       logger.debug("Using data folder " + data_path);
 
       logger.info("Started " + BuildConfig.NAME + " " + BuildConfig.VERSION);
-      httpServer.start();
       while (!Thread.interrupted()) {
         try {
           Socket socket = server.accept();
@@ -135,7 +135,7 @@ public class Main implements Runnable {
       } catch (Exception ignored) {
       }
       try {
-        httpServer.stop(0);
+        Spark.stop();
       } catch (Exception ignored) {
       }
       System.exit(1);
@@ -145,5 +145,17 @@ public class Main implements Runnable {
   private void treatIpPort() {
     String[] split = ip_port.split(":");
     httpSocketAddress = new InetSocketAddress(split[0], Integer.parseInt(split[1]));
+  }
+
+  private void initSparkServer() {
+    Spark.initExceptionHandler((e) -> System.out.println("Uh-oh"));
+    Spark.ipAddress(httpSocketAddress.getAddress().getHostAddress());
+    Spark.port(httpSocketAddress.getPort());
+
+    Spark.post("/register", new HttpRegisterHandler());
+    Spark.post("/send", new HttpRegisterHandler());
+    Spark.get("/version", new HttpVersionHandler());
+
+    Spark.init();
   }
 }

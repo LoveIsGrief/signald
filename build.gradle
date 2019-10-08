@@ -26,6 +26,7 @@ dependencies {
     compile 'io.sentry:sentry-log4j2:1.7.23'
     compile 'org.slf4j:slf4j-nop:1.8.0-beta4'
     compile 'info.picocli:picocli:3.9.5'
+    compile 'com.sparkjava:spark-core:2.8.0'
 }
 
 

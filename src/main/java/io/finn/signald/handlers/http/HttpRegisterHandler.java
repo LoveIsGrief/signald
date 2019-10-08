@@ -1,13 +1,8 @@
 package io.finn.signald.handlers.http;
 
-import com.sun.net.httpserver.HttpExchange;
 import io.finn.signald.JsonRequest;
 import io.finn.signald.handlers.JsonRegisterHandler;
-
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.util.List;
-import java.util.stream.Collectors;
+import spark.Request;
 
 @AcceptedMethods({HttpMethods.POST})
 public class HttpRegisterHandler extends BaseHttpHandler {
@@ -16,11 +11,11 @@ public class HttpRegisterHandler extends BaseHttpHandler {
     }
 
     @Override
-    protected JsonRequest convertExchange(HttpExchange httpExchange) {
-        JsonRequest request = new JsonRequest();
-        // TODO implement in Spark. No need to reinvent POST args parsing
-        final List<String> lines = new BufferedReader(new InputStreamReader(httpExchange.getRequestBody())).lines().collect(Collectors.toList());
-        request.type = "register";
-        return request;
+    protected JsonRequest convertRequest(Request request) {
+        JsonRequest jsonRequest = new JsonRequest();
+        jsonRequest.type = "register";
+        jsonRequest.username = request.queryMap("username").value().trim();
+        jsonRequest.voice = request.queryMap("voice").booleanValue();
+        return jsonRequest;
     }
 }

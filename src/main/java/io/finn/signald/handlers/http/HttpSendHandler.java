@@ -1,8 +1,8 @@
 package io.finn.signald.handlers.http;
 
-import com.sun.net.httpserver.HttpExchange;
 import io.finn.signald.JsonRequest;
 import io.finn.signald.handlers.BaseJsonHandler;
+import spark.Request;
 
 public class HttpSendHandler extends BaseHttpHandler {
     public HttpSendHandler(BaseJsonHandler jsonHandler) {
@@ -10,7 +10,7 @@ public class HttpSendHandler extends BaseHttpHandler {
     }
 
     @Override
-    protected JsonRequest convertExchange(HttpExchange httpExchange) {
+    protected JsonRequest convertRequest(Request request) {
         return null;
     }
 }

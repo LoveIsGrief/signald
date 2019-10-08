@@ -6,15 +6,15 @@ import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sun.net.httpserver.HttpExchange;
-import com.sun.net.httpserver.HttpHandler;
 import io.finn.signald.JsonMessageWrapper;
 import io.finn.signald.JsonRequest;
 import io.finn.signald.JsonStatusMessage;
 import io.finn.signald.handlers.BaseJsonHandler;
+import spark.Request;
+import spark.Response;
+import spark.Route;
 
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.lang.annotation.*;
 import java.util.Arrays;
 import java.util.List;
@@ -45,7 +45,7 @@ enum HttpMethods {
 
 // TODO switch to https://sparkjava.com
 @AcceptedMethods({HttpMethods.GET})
-public abstract class BaseHttpHandler implements HttpHandler {
+public abstract class BaseHttpHandler implements Route {
 
   private BaseJsonHandler jsonHandler;
   private ObjectMapper mpr = new ObjectMapper();
@@ -58,30 +58,49 @@ public abstract class BaseHttpHandler implements HttpHandler {
     this.mpr.disable(JsonGenerator.Feature.AUTO_CLOSE_TARGET);
   }
 
-  protected abstract JsonRequest convertExchange(HttpExchange httpExchange);
+  protected abstract JsonRequest convertRequest(Request request);
 
-  public void handle(HttpExchange httpExchange) throws IOException {
-    JsonRequest jsonRequest = convertExchange(httpExchange);
+  @Override
+  public Object handle(Request request, Response response) {
+    JsonRequest jsonRequest = convertRequest(request);
+    String errorType = null;
+    String errorMessage = null;
+    int returnCode = 200;
+    JsonMessageWrapper msgWrapper = null;
     try {
-      checkAnnotations(httpExchange);
-      writeResponseJson(this.jsonHandler.handle(jsonRequest), httpExchange);
+      checkAnnotations(request);
+      msgWrapper = this.jsonHandler.handle(jsonRequest);
     } catch (UnacceptedHttpMethod e) {
-      writeResponseJson(
-          new JsonMessageWrapper("http_method_error",
-              new JsonStatusMessage(0, e.getMessage(), jsonRequest)
-          ),
-          httpExchange, 405
+      returnCode = 405;
+      errorType = "http_method_error";
+      errorMessage = e.getMessage();
+    } catch (IOException e) {
+      returnCode = 500;
+      errorType = "io_error";
+      errorMessage = e.getMessage();
+    }
+    if (msgWrapper == null) {
+      msgWrapper = new JsonMessageWrapper(
+          errorType,
+          new JsonStatusMessage(0, errorMessage, jsonRequest),
+          jsonRequest.id
       );
     }
+    try {
+      writeResponseJson(msgWrapper, response, returnCode);
+    } catch (IOException e) {
+      return "INTERNAL SERVER ERROR: " + e.getMessage();
+    }
+    return response.body();
   }
 
-  private void checkAnnotations(HttpExchange httpExchange) throws UnacceptedHttpMethod {
+  private void checkAnnotations(Request request) throws UnacceptedHttpMethod {
     final Annotation[] annotations = this.getClass().getAnnotations();
     for (Annotation annotation : annotations) {
 
       // Only accept annotated HTTP methods
       if (annotation instanceof AcceptedMethods) {
-        final String requestMethod = httpExchange.getRequestMethod();
+        final String requestMethod = request.requestMethod();
         final List<String> acceptedMethods = Arrays
             .stream(((AcceptedMethods) annotation).value())
             .map(HttpMethods::toString)
@@ -94,16 +113,14 @@ public abstract class BaseHttpHandler implements HttpHandler {
     }
   }
 
-  protected void writeResponseJson(JsonMessageWrapper message, HttpExchange httpExchange) throws IOException {
-    writeResponseJson(message, httpExchange, 200);
+  protected void writeResponseJson(JsonMessageWrapper message, Response response) throws IOException {
+    writeResponseJson(message, response, 200);
   }
 
-  protected void writeResponseJson(JsonMessageWrapper message, HttpExchange httpExchange, int returnCode) throws IOException {
+  protected void writeResponseJson(JsonMessageWrapper message, Response response, int returnCode) throws IOException {
     String jsonMessage = this.mpr.writeValueAsString(message);
-    httpExchange.getResponseHeaders().add("Accepted", "application/json");
-    httpExchange.sendResponseHeaders(returnCode, 0);
-    PrintWriter out = new PrintWriter(httpExchange.getResponseBody(), true);
-    out.println(jsonMessage);
-    out.close();
+    response.type("application/json");
+    response.status(returnCode);
+    response.body(jsonMessage);
   }
 }
