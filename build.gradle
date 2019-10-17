@@ -1,9 +1,11 @@
 plugins {
    id 'de.fuerstenau.buildconfig' version '1.1.8'
+    id "org.openapi.generator" version "4.1.1"
 }
 
 apply plugin: 'java'
 apply plugin: 'application'
+apply plugin: 'org.openapi.generator'
 
 mainClassName = 'io.finn.signald.Main'
 
@@ -27,6 +29,7 @@ dependencies {
     compile 'org.slf4j:slf4j-nop:1.8.0-beta4'
     compile 'info.picocli:picocli:3.9.5'
     compile 'com.sparkjava:spark-core:2.8.0'
+//    classpath "org.openapitools:openapi-generator-gradle-plugin:4.1.1"
 }
 
 
@@ -92,4 +95,33 @@ task checkLibVersions {
             }
         }
     }
+}
+
+openApiValidate {
+    inputSpec = "$rootDir/openapi.yaml".toString()
+}
+
+openApiGenerate {
+    generatorName = "java-undertow-server"
+    inputSpec = "$rootDir/openapi.yaml".toString()
+    outputDir = "$buildDir/undertow".toString()
+
+    packageName = "io.finn.signald.http"
+    invokerPackage = "io.finn.signald.http.handler"
+    modelPackage = "io.finn.signald.http.model"
+    apiPackage = "io.finn.signald.http.api"
+
+
+    configOptions = [
+            invokerPackage: "io.finn.signald.http.handler",
+
+            artifactId: "signald-http-server",
+            artifactUrl: "https://gitlab.com/LoveIsGrief/signald",
+
+            gitHost    : "gitlab.com",
+            gitUserId  : "LoveIsGrief",
+            gitRepoId  : "signald",
+            licenseName: "GPLv3",
+            dateLibrary: "java8"
+    ]
 }
