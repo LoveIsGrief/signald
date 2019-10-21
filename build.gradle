@@ -1,11 +1,11 @@
 plugins {
    id 'de.fuerstenau.buildconfig' version '1.1.8'
-    id "org.openapi.generator" version "4.1.1"
+   id 'com.google.protobuf' version '0.8.8'
+   id 'idea'
 }
 
 apply plugin: 'java'
 apply plugin: 'application'
-apply plugin: 'org.openapi.generator'
 
 mainClassName = 'io.finn.signald.Main'
 
@@ -16,7 +16,12 @@ repositories {
     maven {url "https://raw.github.com/AsamK/maven/master/releases/"}
     maven {url "https://plugins.gradle.org/m2/"}
     mavenCentral()
+    mavenLocal()
 }
+
+def grpcVersion = '1.24.0' // CURRENT_GRPC_VERSION
+def protobufVersion = '3.10.0'
+def protocVersion = protobufVersion
 
 dependencies {
     compile 'com.github.turasa:signal-service-java:2.13.0_unofficial_2'
@@ -29,7 +34,16 @@ dependencies {
     compile 'org.slf4j:slf4j-nop:1.8.0-beta4'
     compile 'info.picocli:picocli:3.9.5'
     compile 'com.sparkjava:spark-core:2.8.0'
-//    classpath "org.openapitools:openapi-generator-gradle-plugin:4.1.1"
+
+    // gRPC deps
+    implementation "io.grpc:grpc-protobuf:${grpcVersion}"
+    implementation "io.grpc:grpc-stub:${grpcVersion}"
+    compileOnly "javax.annotation:javax.annotation-api:1.2"
+
+    // examples/advanced need this for JsonFormat
+    implementation "com.google.protobuf:protobuf-java-util:${protobufVersion}"
+
+    runtimeOnly "io.grpc:grpc-netty-shaded:${grpcVersion}"
 }
 
 
@@ -45,6 +59,25 @@ buildConfig {
   buildConfigField 'String', 'SIGNAL_CDN_URL', { System.getenv("SIGNAL_CDN_URL") ?: "https://cdn.signal.org" }
   buildConfigField 'String', 'SIGNAL_CONTACT_DISCOVERY_URL', { System.getenv("SIGNAL_CONTACT_DISCOVERY_URL") ?: "https://cms.souqcdn.com" }
   buildConfigField 'String', 'USER_AGENT', { System.getenv("USER_AGENT") ?: "signald-" + version }
+}
+
+protobuf {
+    protoc { artifact = "com.google.protobuf:protoc:${protocVersion}" }
+    plugins {
+        grpc { artifact = "io.grpc:protoc-gen-grpc-java:${grpcVersion}" }
+    }
+    generateProtoTasks {
+        all()*.plugins { grpc {} }
+    }
+}
+
+sourceSets {
+    main {
+        java {
+            srcDirs 'build/generated/source/proto/main/grpc'
+            srcDirs 'build/generated/source/proto/main/java'
+        }
+    }
 }
 
 
@@ -95,33 +128,4 @@ task checkLibVersions {
             }
         }
     }
-}
-
-openApiValidate {
-    inputSpec = "$rootDir/openapi.yaml".toString()
-}
-
-openApiGenerate {
-    generatorName = "java-undertow-server"
-    inputSpec = "$rootDir/openapi.yaml".toString()
-    outputDir = "$buildDir/undertow".toString()
-
-    packageName = "io.finn.signald.http"
-    invokerPackage = "io.finn.signald.http.handler"
-    modelPackage = "io.finn.signald.http.model"
-    apiPackage = "io.finn.signald.http.api"
-
-
-    configOptions = [
-            invokerPackage: "io.finn.signald.http.handler",
-
-            artifactId: "signald-http-server",
-            artifactUrl: "https://gitlab.com/LoveIsGrief/signald",
-
-            gitHost    : "gitlab.com",
-            gitUserId  : "LoveIsGrief",
-            gitRepoId  : "signald",
-            licenseName: "GPLv3",
-            dateLibrary: "java8"
-    ]
 }

@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "io.finn.signald.handlers.grpc";
+
+package signald;
+
+service SignalDaemon {
+
+    rpc Register (RegisterMessage) returns (SuccessResponse) {
+    }
+}
+
+message RegisterMessage{
+    bool voice = 1;
+}
+
+message SuccessResponse{}
