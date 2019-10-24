@@ -1,5 +1,7 @@
 syntax = "proto3";
 
+import "google/protobuf/any.proto";
+
 option java_multiple_files = true;
 option java_package = "io.finn.signald.handlers.grpc";
 
@@ -7,12 +9,37 @@ package signald;
 
 service SignalDaemon {
 
-    rpc Register (RegisterMessage) returns (SuccessResponse) {
-    }
+    rpc Register (RegisterMessage) returns (SuccessResponse) {}
+
+
+    rpc AddContact (InputMessage) returns (SuccessResponse) {}
+    rpc RemoveContact (InputMessage) returns (SuccessResponse) {}
+    rpc UpdateContact (InputMessage) returns (SuccessResponse) {}
 }
 
-message RegisterMessage{
+message InputMessage {
+    string username = 1;
+    oneof inner {
+        ContactMessage contact_message = 2;
+        RegisterMessage register_message = 5;
+    }
+
+}
+
+message BaseMessage {
+    ContactMessage myContactMessage = 1;
+    RegisterMessage myRegisterMessage = 2;
+}
+
+message ContactMessage {
+    string phone_number = 1;
+    string name = 2;
+    string color = 3;
+}
+
+message RegisterMessage {
     bool voice = 1;
 }
 
-message SuccessResponse{}
+
+message SuccessResponse {}
